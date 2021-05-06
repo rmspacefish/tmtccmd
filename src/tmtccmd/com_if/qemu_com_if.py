@@ -98,7 +98,7 @@ class QEMUComIF(CommunicationInterface):
         self.dle_max_frame = dle_max_frame
         self.dle_timeout = dle_timeout
 
-    def initialize(self) -> None:
+    def initialize(self, args: any = None) -> any:
         """
         Needs to be called by application code once for DLE mode!
         """
@@ -106,7 +106,7 @@ class QEMUComIF(CommunicationInterface):
             self.background_loop_thread = Thread(
                 target=start_background_loop, args=(self.loop,), daemon=True)
 
-    def open(self) -> None:
+    def open(self, args: any = None) -> None:
         self.background_loop_thread.start()
         try:
             self.usart = asyncio.run_coroutine_threadsafe(
@@ -119,7 +119,7 @@ class QEMUComIF(CommunicationInterface):
             self.reception_buffer = deque(maxlen=self.dle_queue_len)
             asyncio.run_coroutine_threadsafe(self.start_dle_polling(), self.loop)
 
-    def close(self):
+    def close(self, args: any = None) -> None:
         if self.loop.is_closed():
             return
 

@@ -25,9 +25,9 @@ class PusTelemetry:
         @param raw_telemetry:
         """
         if raw_telemetry is None or raw_telemetry == bytearray():
-            if(raw_telemetry is None):
+            if raw_telemetry is None:
                 print("PusTelemetry: Given byte stream ivalid!")
-            elif (raw_telemetry == bytearray()):
+            elif raw_telemetry == bytearray():
                 print("PusTelemetry: Given byte stream empty!")
             raise ValueError
         self.pus_version = get_pus_tm_version()

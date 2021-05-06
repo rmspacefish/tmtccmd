@@ -2,7 +2,6 @@ import struct
 from typing import Dict
 
 from tmtccmd.utility.tmtcc_logger import get_logger
-from tmtccmd.core.definitions import CoreObjectIds
 
 LOGGER = get_logger()
 
@@ -40,12 +39,12 @@ class ObjectIdManager:
 
     def get_object_id_info_from_int_id(self, object_id: int):
         object_id_bytearray = struct.pack('!I', object_id)
-        return get_object_id_info(object_id=object_id_bytearray)
+        return self.get_object_id_info(object_id=bytearray(object_id_bytearray))
 
     def insert_object_id(self, object_id: bytearray, object_id_info: list):
         self.object_id_dict.update({bytes(object_id): object_id_info})
 
-    def insert_object_ids(self, object_id_dict: Dict[bytearray, list]):
+    def insert_object_ids(self, object_id_dict: Dict[bytes, list]):
         self.object_id_dict.update(object_id_dict)
 
 
@@ -55,7 +54,7 @@ def insert_object_id(object_id: bytearray, object_id_info: list):
     )
 
 
-def insert_object_ids(object_id_dict: Dict[bytearray, list]):
+def insert_object_ids(object_id_dict: Dict[bytes, list]):
     if object_id_dict is not None:
         return ObjectIdManager.get_manager().insert_object_ids(object_id_dict=object_id_dict)
 

@@ -42,7 +42,6 @@ class Service5TM(PusTelemetry):
         self.param_2 = struct.unpack('>I', self._tm_data[10:14])[0]
         self.custom_service_5_print = ""
         if call_srv5_hook:
-            from tmtccmd.core.hook_base import TmTcHookBase
             from tmtccmd.core.hook_helper import get_global_hook_obj
             hook_obj = get_global_hook_obj()
             self.custom_service_5_print = hook_obj.handle_service_5_event(
@@ -63,16 +62,17 @@ class Service5TM(PusTelemetry):
         header_list.append("Parameter 1")
         header_list.append("Parameter 2")
 
-    def handle_service_5_event(self, object_id: int, event_id: int, param_1: int, param_2: int) -> str:
+    def handle_service_5_event(self, object_id: bytearray, event_id: int, param_1: int, param_2: int) -> str:
         try:
             from tmtccmd.core.hook_helper import get_global_hook_obj
             hook_obj = get_global_hook_obj()
-            self.custom_data_header, self.custom_data_content = \
-                hook_obj.handle_service_5_event(
-                    object_id=self.object_id_key, event_id=event_id, param_1=param_1, param_2=param_2
+            custom_string = hook_obj.handle_service_5_event(
+                    object_id=self.object_id, event_id=event_id, param_1=param_1, param_2=param_2
                 )
+            return custom_string
         except ImportError:
             LOGGER.warning("Service 5 user data hook not supplied!")
+        return ""
 
     def get_custom_printout(self) -> str:
         return self.custom_service_5_print

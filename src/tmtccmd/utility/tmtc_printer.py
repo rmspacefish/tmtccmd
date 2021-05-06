@@ -357,8 +357,8 @@ class TmTcPrinter:
     def print_telecommand(self, tc_packet_obj: PusTelecommand, tc_packet_raw: bytearray = bytearray()):
         """
         This function handles the printing of Telecommands. It assumed the packets are sent shortly before or after.
-        :param tc_packet:
         :param tc_packet_obj:
+        :param tc_packet_raw:
         :return:
         """
         if self.print_tc:

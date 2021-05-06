@@ -7,7 +7,7 @@
 """
 import select
 import socket
-from typing import Tuple, Union
+from typing import Union
 
 from tmtccmd.utility.tmtcc_logger import get_logger
 from tmtccmd.core.definitions import CoreModeList
@@ -59,7 +59,7 @@ class TcpIpUdpComIF(CommunicationInterface):
         except IOError:
             LOGGER.warning("Could not close UDP communication interface!")
 
-    def initialize(self) -> None:
+    def initialize(self, args: any = None) -> any:
         pass
 
     def open(self, args: any = None):
@@ -78,7 +78,7 @@ class TcpIpUdpComIF(CommunicationInterface):
             ping_cmd = pack_service17_ping_command(ssc=0)
             self.send_telecommand(ping_cmd.pack(), ping_cmd)
 
-    def close(self) -> None:
+    def close(self, args: any = None) -> None:
         if self.udp_socket is not None:
             self.udp_socket.close()
 

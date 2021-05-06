@@ -38,9 +38,8 @@ def initialize_tmtc_commander(hook_object: TmTcHookBase):
         initialize_tmtccmd(hook_obj)
         run_tmtc_client(False)
 
-    :param hook_base:       Instantiation of a custom hook object. The TMTC core will call the various
+    :param hook_object:     Instantiation of a custom hook object. The TMTC core will call the various
                             hook functions during program run-time.
-    :param tmtc_backend:    Custom backend
     :raises: ValueError for an invalid hook object.
     """
     __assign_tmtc_commander_hooks(hook_object=hook_object)
@@ -66,6 +65,8 @@ def run_tmtc_commander(
     :param use_gui:             Specify whether the GUI is used or not
     :param reduced_printout:    It is possible to reduce the initial printout with this flag
     :param ansi_colors:         Enable ANSI color output for terminal
+    :param tmtc_backend:
+    :param tmtc_frontend:
     :raises: ValueError if initialize_tmtc_commander was not called before
     :return:
     """
@@ -165,14 +166,8 @@ def __handle_cli_args_and_globals():
 
     LOGGER.info("Parsing input arguments..")
     args = parse_input_arguments()
-
-    json_cfg_path = hook_obj.set_json_config_file_path()
-
-    set_json_cfg_path(json_cfg_path=json_cfg_path)
-    get_global(CoreGlobalIds.JSON_CFG_PATH)
-
     LOGGER.info("Setting up post-globals..")
-    hook_obj.add_globals_post_args_parsing(args, json_cfg_path=json_cfg_path)
+    hook_obj.add_globals_post_args_parsing(args=args)
 
 
 def __start_tmtc_commander_cli(tmtc_backend: BackendBase):

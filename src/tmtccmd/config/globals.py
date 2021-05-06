@@ -1,4 +1,4 @@
-import collections
+import collections.abc
 from typing import List, Union
 
 from tmtccmd.utility.tmtcc_logger import get_logger

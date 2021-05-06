@@ -50,7 +50,8 @@ class Service3TM(Service3Base):
         self.min_hk_reply_size = minimum_reply_size
         self.custom_hk_handling = custom_hk_handling
         self.hk_structure_report_header_size = minimum_structure_report_header_size
-        self.object_id = struct.unpack('!I', self._tm_data[0:4])[0]
+        self.object_id_bytes = self._tm_data[0:4]
+        self.object_id = struct.unpack('!I', self.object_id_bytes)[0]
         self.set_id = struct.unpack('!I', self._tm_data[4:8])[0]
 
         self.specify_packet_info("Housekeeping Packet")
@@ -123,14 +124,14 @@ class Service3TM(Service3Base):
             if self.custom_hk_handling:
                 (self.hk_header, self.hk_content, self.validity_buffer, self.number_of_parameters) \
                     = hook_obj.handle_service_3_housekeeping(
-                        object_id=0, set_id=0, hk_data=self._tm_data[0:],
+                        object_id=bytearray(), set_id=0, hk_data=self._tm_data[0:],
                         service3_packet=self
                     )
             else:
                 (self.hk_header, self.hk_content, self.validity_buffer,
                  self.number_of_parameters) = \
                     hook_obj.handle_service_3_housekeeping(
-                        object_id=self.object_id_key, set_id=self.set_id, hk_data=self._tm_data[8:],
+                        object_id=self.object_id_bytes, set_id=self.set_id, hk_data=self._tm_data[8:],
                         service3_packet=self
                     )
         except ImportError:

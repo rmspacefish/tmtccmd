@@ -3,7 +3,7 @@
 :date:      09.03.2020
 :brief:     Dummy Communication Interface. Currently serves to provide an example without external hardware
 """
-from typing import Tuple, cast
+from typing import cast
 
 from tmtccmd.com_if.com_interface_base import CommunicationInterface
 from tmtccmd.ecss.tc import PusTelecommand
@@ -24,13 +24,13 @@ class DummyComIF(CommunicationInterface):
         self.tc_ssc = 0
         self.tc_packet_id = 0
 
-    def initialize(self) -> any:
+    def initialize(self, args: any = None) -> any:
         pass
 
-    def open(self):
+    def open(self, args: any = None) -> None:
         pass
 
-    def close(self) -> None:
+    def close(self, args: any = None) -> None:
         pass
 
     def data_available(self, parameters):

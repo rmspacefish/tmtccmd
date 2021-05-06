@@ -44,13 +44,21 @@ class TmTcHookBase:
         set_default_globals_pre_args_parsing(gui=gui, apid=DEFAULT_APID)
 
     @abstractmethod
-    def add_globals_post_args_parsing(self, args: argparse.Namespace, json_cfg_path: str = ""):
+    def set_json_config_file_path(self) -> str:
+        """
+        The user can specify a path and filename for the JSON configuration file by overriding this function.
+        :return:
+        """
+        return "tmtc_config.json"
+
+    @abstractmethod
+    def add_globals_post_args_parsing(self, args: argparse.Namespace):
         """
         Add global variables prior after parsing the CLI arguments.
-        :param gui:  Specify whether a GUI is used
+        :param args:  Specify whether a GUI is used
         """
         from tmtccmd.defaults.globals_setup import set_default_globals_post_args_parsing
-        set_default_globals_post_args_parsing(args=args)
+        set_default_globals_post_args_parsing(args=args, json_cfg_path=self.set_json_config_file_path())
 
     @abstractmethod
     def assign_communication_interface(
@@ -62,7 +70,9 @@ class TmTcHookBase:
         :param tmtc_printer:    Printer utility instance.
         """
         from tmtccmd.defaults.com_setup import create_communication_interface_default
-        return create_communication_interface_default(com_if=com_if, tmtc_printer=tmtc_printer)
+        return create_communication_interface_default(
+            com_if=com_if, tmtc_printer=tmtc_printer, json_cfg_path=self.set_json_config_file_path()
+        )
 
     @abstractmethod
     def perform_mode_operation(self, tmtc_backend: TmTcHandler, mode: int):
@@ -120,7 +130,7 @@ class TmTcHookBase:
     ) -> Tuple[list, list, bytearray, int]:
         """
         This function is called when a Service 3 Housekeeping packet is received.
-        :param object_id_key:   Integer representation of the found object ID. See
+        :param object_id:       Integer representation of the found object ID. See
                                 the :func:`~tmtccmd.core.hook_base.set_object_ids function for more information
         :param set_id:          Unique set ID of the HK reply
         :param hk_data:         HK data. For custom HK handling, whole HK data will be passed here.
@@ -146,7 +156,7 @@ class TmTcHookBase:
         """
         This function is called when a Service 5 Event Packet is received. The user can specify a custom
         string here which will be printed to display additional information related to an event.
-        :param object_id_key:   Integer representation of the found object ID. See
+        :param object_id:       Integer representation of the found object ID. See
                                 the :func:`~tmtccmd.core.hook_base.set_object_ids function for more information
         :param event_id:        Two-byte event ID
         :param param_1:         Four-byte Parameter 1
@@ -154,8 +164,3 @@ class TmTcHookBase:
         :return:    Custom information string which will be printed with the event
         """
         return ""
-
-    @abstractmethod
-    def set_json_config_file_path(self) -> str:
-        return "tmtc_config.json"
-

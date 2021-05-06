@@ -1,7 +1,6 @@
 """
 @brief  Definitions for the TMTC commander core
 """
-
 import enum
 from typing import Tuple
 
@@ -33,10 +32,6 @@ class QueueCommands(enum.Enum):
     WAIT = enum.auto()
     EXPORT_LOG = enum.auto()
     SET_TIMEOUT = enum.auto()
-
-
-class CoreObjectIds(enum.IntEnum):
-    INVALID = 999
 
 
 # Mode options, set by args parser
@@ -110,4 +105,3 @@ class CoreGlobalIds(enum.IntEnum):
 
 DEFAULT_APID = 0xef
 DEBUG_MODE = False
-

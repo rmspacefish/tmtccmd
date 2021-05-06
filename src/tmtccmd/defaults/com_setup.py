@@ -6,7 +6,7 @@ from tmtccmd.core.globals_manager import get_global, update_global
 from tmtccmd.com_if.com_interface_base import CommunicationInterface
 from tmtccmd.com_if.serial_com_if import SerialConfigIds, SerialCommunicationType
 from tmtccmd.com_if.serial_utilities import determine_com_port, determine_baud_rate
-from tmtccmd.com_if.tcpip_utilities import TcpIpConfigIds, ethernet_address_t
+from tmtccmd.com_if.tcpip_utilities import TcpIpConfigIds
 from tmtccmd.utility.tmtcc_logger import get_logger
 from tmtccmd.utility.tmtc_printer import TmTcPrinter
 
@@ -15,7 +15,7 @@ LOGGER = get_logger()
 
 
 def create_communication_interface_default(
-        com_if: int, tmtc_printer: TmTcPrinter
+        com_if: int, tmtc_printer: TmTcPrinter, json_cfg_path: str
 ) -> Union[CommunicationInterface, None]:
     from tmtccmd.com_if.serial_com_if import SerialComIF
     from tmtccmd.com_if.dummy_com_if import DummyComIF
@@ -45,7 +45,7 @@ def create_communication_interface_default(
             serial_baudrate = serial_cfg[SerialConfigIds.SERIAL_BAUD_RATE]
             serial_timeout = serial_cfg[SerialConfigIds.SERIAL_TIMEOUT]
             # Determine COM port, either extract from JSON file or ask from user.
-            com_port = determine_com_port()
+            com_port = determine_com_port(json_cfg_path=json_cfg_path)
             communication_interface = SerialComIF(
                 tmtc_printer=tmtc_printer, com_port=com_port, baud_rate=serial_baudrate,
                 serial_timeout=serial_timeout,
@@ -63,7 +63,8 @@ def create_communication_interface_default(
             dle_max_queue_len = serial_cfg[SerialConfigIds.SERIAL_DLE_QUEUE_LEN]
             dle_max_frame_size = serial_cfg[SerialConfigIds.SERIAL_DLE_MAX_FRAME_SIZE]
             communication_interface.set_dle_settings(
-                dle_max_queue_len, dle_max_frame_size, serial_timeout)
+                dle_max_queue_len, dle_max_frame_size, serial_timeout
+            )
         else:
             communication_interface = DummyComIF(tmtc_printer=tmtc_printer)
         if not communication_interface.valid:
@@ -92,23 +93,24 @@ def default_tcpip_udp_cfg_setup(json_cfg_path: str):
     update_global(CoreGlobalIds.ETHERNET_CONFIG, ethernet_cfg_dict)
 
 
-def default_serial_cfg_setup(com_if: int):
-    baud_rate = determine_baud_rate()
+def default_serial_cfg_setup(json_cfg_path: str, com_if: int):
+    baud_rate = determine_baud_rate(json_cfg_path=json_cfg_path)
     if com_if == CoreComInterfaces.SERIAL_DLE:
-        serial_port = determine_com_port()
+        serial_port = determine_com_port(json_cfg_path=json_cfg_path)
     else:
         serial_port = ""
-    set_up_serial_cfg(com_if=com_if, baud_rate=baud_rate, com_port=serial_port)
+    set_up_serial_cfg(json_cfg_path=json_cfg_path, com_if=com_if, baud_rate=baud_rate, com_port=serial_port)
 
 
 def set_up_serial_cfg(
-        com_if: int, baud_rate: int, com_port: str = "",  tm_timeout: float = 0.01,
+        json_cfg_path: str, com_if: int, baud_rate: int, com_port: str = "",  tm_timeout: float = 0.01,
         ser_com_type: SerialCommunicationType = SerialCommunicationType.DLE_ENCODING,
         ser_frame_size: int = 256, dle_queue_len: int = 25, dle_frame_size: int = 1024
 ):
     """
     Default configuration to set up serial communication. The serial port and the baud rate
     will be determined from a JSON configuration file and prompted from the user
+    :param json_cfg_path:
     :param com_if:
     :param com_port:
     :param baud_rate:
@@ -122,7 +124,7 @@ def set_up_serial_cfg(
     update_global(CoreGlobalIds.USE_SERIAL, True)
     if com_if == CoreComInterfaces.SERIAL_DLE and com_port == "":
         LOGGER.warning("Invalid com port specified!")
-        com_port = determine_com_port()
+        com_port = determine_com_port(json_cfg_path=json_cfg_path)
     serial_cfg_dict = get_global(CoreGlobalIds.SERIAL_CONFIG)
     serial_cfg_dict.update({SerialConfigIds.SERIAL_PORT: com_port})
     serial_cfg_dict.update({SerialConfigIds.SERIAL_BAUD_RATE: baud_rate})

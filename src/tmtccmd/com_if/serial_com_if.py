@@ -98,12 +98,12 @@ class SerialComIF(CommunicationInterface):
         self.dle_max_frame = dle_max_frame
         self.dle_timeout = dle_timeout
 
-    def initialize(self):
+    def initialize(self, args: any = None) -> any:
         if self.ser_com_type == SerialCommunicationType.DLE_ENCODING:
             self.reception_buffer = deque(maxlen=self.dle_queue_len)
             self.dle_polling_active_event = threading.Event()
 
-    def open(self) -> None:
+    def open(self, args: any = None) -> None:
         try:
             if self.ser_com_type == SerialCommunicationType.DLE_ENCODING:
                 self.dle_polling_active_event.set()
@@ -119,7 +119,7 @@ class SerialComIF(CommunicationInterface):
         if self.ser_com_type == SerialCommunicationType.DLE_ENCODING:
             self.reception_thread.start()
 
-    def close(self):
+    def close(self, args: any = None) -> None:
         try:
             if self.ser_com_type == SerialCommunicationType.DLE_ENCODING:
                 self.dle_polling_active_event.clear()

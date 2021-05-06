@@ -5,9 +5,8 @@ import struct
 
 from tmtccmd.ecss.tm import PusTelemetry
 from tmtccmd.utility.tmtcc_logger import get_logger
-from tmtccmd.core.definitions import CoreObjectIds
 
-logger = get_logger()
+LOGGER = get_logger()
 
 
 class Service8TM(PusTelemetry):
@@ -20,10 +19,8 @@ class Service8TM(PusTelemetry):
         self.custom_data_content = []
         if self.get_subservice() == 130:
             self.specify_packet_info("Functional Data Reply")
-            self.source_object_id = struct.unpack('!I', self.get_tm_data()[0:4])[0]
             self.object_id_bytes = self.get_tm_data()[0:4]
-            if self.object_id_key == CoreObjectIds.INVALID:
-                logger.warning("Service8TM: Unknown object ID")
+            self.source_object_id = struct.unpack('!I', self.object_id_bytes)[0]
             self.source_action_id = struct.unpack('!I', self.get_tm_data()[4:8])[0]
             self.custom_data = self.get_tm_data()[8:]
         else:
@@ -38,7 +35,7 @@ class Service8TM(PusTelemetry):
                         custom_data=self.custom_data
                     )
             except ImportError:
-                logger.warning("Service 8 user data hook not supplied!")
+                LOGGER.warning("Service 8 user data hook not supplied!")
 
     def append_telemetry_content(self, content_list: list):
         super().append_telemetry_content(content_list=content_list)

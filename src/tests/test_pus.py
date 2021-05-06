@@ -7,7 +7,7 @@ from crcmod import crcmod
 from tmtccmd.ecss.tc import PusTelecommand
 from tmtccmd.ecss.tc import generate_crc, generate_packet_crc
 from tmtccmd.ccsds.spacepacket import get_sp_packet_sequence_control
-from tmtccmd.ecss.conf import set_default_apid, get_default_apid, PusVersion, set_pus_tm_version, get_pus_tm_version
+from tmtccmd.ecss.conf import set_default_apid, get_default_apid, PusVersion, get_pus_tm_version
 from tmtccmd.pus_tm.service_17_test import Service17TM, Service17TmPacked
 from tmtccmd.ecss.tm import PusTelemetry
 
