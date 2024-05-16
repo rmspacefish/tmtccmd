@@ -1,4 +1,5 @@
 import logging
+from dataclasses import dataclass
 from typing import Callable, Optional
 
 from PyQt6.QtCore import QThreadPool, QRunnable
@@ -16,7 +17,7 @@ from tmtccmd.gui.defs import (
 from tmtccmd.gui.defs import FrontendState
 from tmtccmd.gui.worker import FrontendWorker
 
-LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)
 
 
 class ButtonArgs:
@@ -64,7 +65,7 @@ class ConnectButtonWrapper:
             self._disconnect_button_pressed()
 
     def _connect_button_pressed(self):
-        LOGGER.info("Opening COM Interface")
+        _LOGGER.info("Opening COM Interface")
         self._com_if_needs_switch = False
         # Build and assign new communication interface
         if self._args.state.current_com_if != self._args.state.last_com_if:
@@ -100,7 +101,7 @@ class ConnectButtonWrapper:
             and self._bttn_params.tm_listener_bttn is not None
         ):
             self._bttn_params.tm_listener_bttn.click()
-        LOGGER.info("Connected")
+        _LOGGER.info("Connected")
 
     def _disconnect_button_pressed(self):
         self.button.setEnabled(False)
@@ -116,21 +117,59 @@ class ConnectButtonWrapper:
         self.button.setStyleSheet(CONNECT_BTTN_STYLE)
         self.button.setText("Connect")
         self._bttn_params.disconnect_cb()
-        LOGGER.info("Disconnected")
+        _LOGGER.info("Disconnected")
 
 
-class TmButtonWrapper:
-    def __init__(self, button: QPushButton, args: ButtonArgs, conn_button: QPushButton):
+@dataclass
+class TmButtonModel:
+    style_sheet: str
+    text: str
+    enabled: bool
+
+    @classmethod
+    def disconnected(cls):
+        return cls(DISCONNECT_BTTN_STYLE, "Start TM listener", False)
+
+    def set_connected(self):
+        self.style_sheet = DISCONNECT_BTTN_STYLE
+        self.text = "Stop TM listener"
+        self.enabled = True
+
+    def set_disconnected(self):
+        self.style_sheet = CONNECT_BTTN_STYLE
+        self.text = "Start TM listener"
+        self.enabled = False
+
+
+class TmButtonView:
+    def __init__(self, button: QPushButton):
         self.button = button
+
+    def render(self, model: TmButtonModel):
+        self.button.setText(model.text)
+        self.button.setEnabled(model.enabled)
+        self.button.setStyleSheet(model.style_sheet)
+
+
+class TmButtonController:
+    def __init__(
+        self,
+        view: TmButtonView,
+        args: ButtonArgs,
+        conn_button: QPushButton,
+    ):
+        self.view = view
+        self.model = TmButtonModel.disconnected()
+        self.view.render(self.model)
         self.args = args
         self.worker: Optional[QRunnable] = None
         self._listening = False
         self._next_listener_state = False
-        self.button.setStyleSheet(CONNECT_BTTN_STYLE)
-        self.button.setText("Start TM listener")
-        self.button.setEnabled(False)
-        self.button.clicked.connect(self.button_op)
+        self.view.button.clicked.connect(self.button_op)
         self._conn_button = conn_button
+
+    def render_view(self):
+        self.view.render(self.model)
 
     def is_listening(self):
         return self._listening
@@ -144,7 +183,7 @@ class TmButtonWrapper:
             self.worker.signals.abort.emit(None)
 
     def start_listener(self):
-        LOGGER.info("Starting TM listener")
+        _LOGGER.info("Starting TM listener")
         self.worker = FrontendWorker(
             LocalArgs(WorkerOperationsCode.LISTEN_FOR_TM, 0.4), self.args.shared
         )
@@ -154,12 +193,12 @@ class TmButtonWrapper:
         self.button_op_done()
 
     def stop_listener(self):
-        LOGGER.info("Stopping TM listener")
+        _LOGGER.info("Stopping TM listener")
         self._next_listener_state = False
         if self.worker is not None:
             self.worker.signals.finished.connect(self.button_op_done)
             self.worker.signals.stop.emit(None)
-        self.button.setEnabled(False)
+        self.view.button.setEnabled(False)
 
     def button_op(self):
         if not self._listening:
@@ -169,17 +208,16 @@ class TmButtonWrapper:
 
     def button_op_done(self):
         if self._next_listener_state:
-            self.button.setStyleSheet(DISCONNECT_BTTN_STYLE)
-            self.button.setText("Stop TM listener")
+            self.model.set_connected()
             self._listening = True
-            self.button.setEnabled(True)
         else:
-            self.button.setStyleSheet(CONNECT_BTTN_STYLE)
+            self.model.style_sheet = CONNECT_BTTN_STYLE
             if not self.args.shared.com_if_ref_tracker.is_used():
                 self._conn_button.setEnabled(True)
-            self.button.setText("Start TM listener")
+            self.model.text = "Start TM listener"
+            self.model.set_disconnected()
             self._listening = False
-        self.button.setEnabled(True)
+        self.view.render(self.model)
 
 
 class SendButtonWrapper:
@@ -195,7 +233,7 @@ class SendButtonWrapper:
 
     def _button_op(self):
         if self.debug_mode:
-            LOGGER.info("Send command button pressed.")
+            _LOGGER.info("Send command button pressed.")
         self.button.setDisabled(True)
         if self._args.state.current_cmd_path is None:
             return

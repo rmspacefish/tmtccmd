@@ -39,7 +39,8 @@ from tmtccmd.gui.buttons import (
     ConnectButtonParams,
     ButtonArgs,
     SendButtonWrapper,
-    TmButtonWrapper,
+    TmButtonController,
+    TmButtonView,
     ConnectButtonWrapper,
 )
 from tmtccmd.gui.cmd_select import CommandPathSelectWidget
@@ -137,12 +138,12 @@ class TmTcFrontend(QMainWindow, FrontendBase):
         grid.addWidget(self.__send_bttn_wrapper.button, row, 0, 1, 2)
         row += 1
 
-        self.__tm_button_wrapper = TmButtonWrapper(
-            button=tm_listener_button,
+        self.__tm_button_ctrl = TmButtonController(
+            view=TmButtonView(tm_listener_button),
             args=button_args,
             conn_button=self.__connect_button_wrapper.button,
         )
-        grid.addWidget(self.__tm_button_wrapper.button, row, 0, 1, 2)
+        grid.addWidget(self.__tm_button_ctrl.view.button, row, 0, 1, 2)
         row += 1
         self.show()
         # self.destroyed.connect(self.__tm_button_wrapper.stop_thread)
@@ -156,14 +157,14 @@ class TmTcFrontend(QMainWindow, FrontendBase):
     def closeEvent(self, event):
         try:
             pass
-            if self.__tm_button_wrapper.is_listening():
+            if self.__tm_button_ctrl.is_listening():
                 LOGGER.warning("TM listener still active. Stopping it first..")
-                self.__tm_button_wrapper.stop_thread()
+                self.__tm_button_ctrl.stop_thread()
                 event.ignore()
             else:
                 pass
         except KeyboardInterrupt:
-            self.__tm_button_wrapper.abort_thread()
+            self.__tm_button_ctrl.abort_thread()
 
     def _create_menu_bar(self):
         menu_bar = self.menuBar()
@@ -269,11 +270,13 @@ class TmTcFrontend(QMainWindow, FrontendBase):
 
     def __connected_com_if_cb(self):
         self.__send_bttn_wrapper.button.setEnabled(True)
-        self.__tm_button_wrapper.button.setEnabled(True)
+        self.__tm_button_ctrl.model.set_connected()
+        self.__tm_button_ctrl.render_view()
 
     def __disconnect_com_if_cb(self):
         self.__send_bttn_wrapper.button.setDisabled(True)
-        self.__tm_button_wrapper.button.setDisabled(True)
+        self.__tm_button_ctrl.model.set_disconnected()
+        self.__tm_button_ctrl.render_view()
 
     def _set_up_cmd_path_ui(self, grid: QGridLayout, row: int):
         font = QFont()
