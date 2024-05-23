@@ -20,7 +20,7 @@ class Service200FsfwReader:
         self.tm = tm
         if len(tm.source_data) < 4:
             raise ValueError("service 200 TM can not even hold object ID")
-        self.object_id = tm.source_data[0:4]
+        self.object_id = bytes(tm.source_data[0:4])
         self.return_value = None
         if tm.subservice == Subservice.TM_CANT_REACH_MODE:
             self.return_value = struct.unpack("!H", tm.source_data[4:6])[0]
